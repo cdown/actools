@@ -68,7 +68,7 @@ fn write_new_replay(
 fn parse_args() -> Args {
     let mut args: Vec<String> = env::args().skip(1).collect();
     if args.len() != 3 {
-        writeln!(&mut io::stderr(), "Usage: change_replay_weather in out to_weather").expect(
+        writeln!(&mut io::stderr(), "Usage: change_weather in out to_weather").expect(
             "Cannot print to stderr",
         );
         process::exit(1);
