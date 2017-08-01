@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::fs::OpenOptions;
+use std::fs::{File, OpenOptions};
 use std::io::{Read, SeekFrom, Seek, BufWriter, Write};
 use std::{io, process, env};
 
