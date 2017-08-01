@@ -20,23 +20,27 @@ fn get_existing_weather_len(rp_if: &mut File) -> io::Result<u8> {
     Ok(buf[0])
 }
 
+fn copy_exact(
+    input: &mut File,
+    output: &mut BufWriter<File>,
+    start: usize,
+    end: usize,
+) -> io::Result<usize> {
+    let mut buf: Vec<u8> = vec![0; end - start];
+    input.seek(SeekFrom::Start(start as u64))?;
+    input.read_exact(&mut buf)?;
+    Ok(output.write(&buf)?)
+}
+
 fn write_header(
     rp_if: &mut File,
     rp_of: &mut BufWriter<File>,
     of_weather: String,
 ) -> io::Result<()> {
-    let mut buf = [0; WEATHER_LEN_OFFSET as usize];
-    rp_if.seek(SeekFrom::Start(0))?;
-    rp_if.read_exact(&mut buf)?;
-    rp_of.write(&buf)?;
+    copy_exact(rp_if, rp_of, 0, WEATHER_LEN_OFFSET as usize)?;
     rp_of.write(&[of_weather.len() as u8])?;
-
-    let mut buf = [0; (WEATHER_OFFSET - (WEATHER_LEN_OFFSET + 1)) as usize];
-    rp_if.seek(SeekFrom::Start(WEATHER_LEN_OFFSET + 1))?;
-    rp_if.read_exact(&mut buf)?;
-    rp_of.write(&buf)?;
+    copy_exact(rp_if, rp_of, WEATHER_LEN_OFFSET as usize + 1, WEATHER_OFFSET as usize)?;
     rp_of.write(of_weather.as_bytes())?;
-
     Ok(())
 }
 
