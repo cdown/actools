@@ -157,7 +157,7 @@ def main():
     )
     parser.add_argument("-s", "--skins", help="path to skins csv", required=True)
     parser.add_argument(
-        "-e", "--entries", help="path to human-readable entries", required=True
+        "-e", "--entries", help="path to human-readable entries",
     )
     parser.add_argument(
         "-b",
@@ -172,8 +172,12 @@ def main():
         BASE_SKINS.update(json.load(base_skins_f))
         assert set(BASE_SKINS) == set(ALL_CARS)
 
-    with open(args.entries) as entry_f:
-        racers = [entry_from_human_readable(e) for e in entry_f]
+    if args.entries:
+        with open(args.entries) as entry_f:
+            racers = [entry_from_human_readable(e) for e in entry_f]
+    else:
+        # Practice server, it will be padded to the number of slots
+        racers = []
 
     if len(set(r.rd_uid for r in racers)) != len(racers):
         raise ValueError("Duplicate race entry")
