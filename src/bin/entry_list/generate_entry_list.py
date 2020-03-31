@@ -155,7 +155,7 @@ def main():
     parser.add_argument(
         "-n", "--slots", type=int, help="number of slots", required=True
     )
-    parser.add_argument("-s", "--skins", help="path to skins csv", required=True)
+    parser.add_argument("-s", "--skins", help="path to skins csv")
     parser.add_argument(
         "-e", "--entries", help="path to human-readable entries",
     )
@@ -173,6 +173,8 @@ def main():
         assert set(BASE_SKINS) == set(ALL_CARS)
 
     if args.entries:
+        if not args.skins:
+            raise ValueError("Can't have --entries without --skins")
         with open(args.entries) as entry_f:
             racers = [entry_from_human_readable(e) for e in entry_f]
     else:
@@ -182,8 +184,9 @@ def main():
     if len(set(r.rd_uid for r in racers)) != len(racers):
         raise ValueError("Duplicate race entry")
 
-    with open(args.skins) as skins_f:
-        merge_entries_with_skin_data(racers, skins_f)
+    if args.skins:
+        with open(args.skins) as skins_f:
+            merge_entries_with_skin_data(racers, skins_f)
 
     print_entry_list_ini(racers, args.slots)
 
