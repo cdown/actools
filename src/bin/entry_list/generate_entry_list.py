@@ -19,7 +19,7 @@ import json
 CAR_NICKNAME_TO_CAR = {}
 ALL_CARS = []
 
-# All available skins
+# All base content or DLC-shipped skins, populated at runtime
 BASE_SKINS = {}
 
 
@@ -48,7 +48,6 @@ LINE_RE = re.compile(r"\[USER=(\d+)\](.+)\[/USER\] - ([^\(]+)")
 def get_car_from_nickname(car_nick):
     if not car_nick:
         return
-
     car_nick = car_nick.lower()
     if car_nick in CAR_NICKNAME_TO_CAR:
         return CAR_NICKNAME_TO_CAR[car_nick]
@@ -171,6 +170,7 @@ def main():
 
     with open(args.base_skins) as base_skins_f:
         BASE_SKINS.update(json.load(base_skins_f))
+        assert set(BASE_SKINS) == set(ALL_CARS)
 
     with open(args.entries) as entry_f:
         racers = [entry_from_human_readable(e) for e in entry_f]
