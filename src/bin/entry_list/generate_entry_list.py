@@ -2,7 +2,7 @@
 
 """
 Generate an entry_list, given a copy paste of the human-readable driver list
-and a skin_mapping.csv.
+and a skin_mapping.
 """
 
 import re
@@ -13,10 +13,14 @@ import random
 import configparser
 import csv
 import sys
+import json
 
 # car nickname -> car codename in AC
 CAR_NICKNAME_TO_CAR = {}
 ALL_CARS = []
+
+# All available skins
+BASE_SKINS = {}
 
 
 def _populate_car_nicknames(model, nicknames):
@@ -90,8 +94,8 @@ def merge_entries_with_skin_data(racers, skins_f):
     # rd_uid -> car
     skin_preferences = collections.defaultdict(dict)
 
-    reader = csv.reader(skins_f)
-    for rd_uid, steam_uid, car, skin in reader:
+    for line in skins_f:
+        rd_uid, steam_uid, car, skin = line.split()
         skin_preferences[rd_uid][get_car_from_nickname(car)] = skin
         rd_to_steam_uid[rd_uid] = steam_uid
 
@@ -101,8 +105,11 @@ def merge_entries_with_skin_data(racers, skins_f):
             # No skins preferred, randomly assign
             continue
 
-        skin_pref = car_prefs.get(get_car_from_nickname(racer.car))
+        car = get_car_from_nickname(racer.car)
+        skin_pref = car_prefs.get(car)
         if skin_pref:
+            if skin_pref not in BASE_SKINS[car]:
+                raise ValueError("Skin {} is unknown for car {}".format(skin_pref, car))
             racer.skin = skin_pref
             racer.steam_uid = rd_to_steam_uid[racer.rd_uid]
 
@@ -121,11 +128,18 @@ def print_entry_list_ini(racers, slots):
         racers.append(Entry())
 
     for cur_car, racer in enumerate(racers):
+        if not racer.car:
+            racer.car = random.choice(ALL_CARS)
+
+        if not racer.skin:
+            racer.skin = random.choice(BASE_SKINS[racer.car])
+
+        car = racer.car or random.choice(ALL_CARS)
         car_key = "CAR_{}".format(cur_car)
         ini[car_key] = {}
         ini[car_key]["; {}".format(racer.name or "Free entry")] = None
-        ini[car_key]["MODEL"] = racer.car or random.choice(ALL_CARS)
-        ini[car_key]["SKIN"] = racer.skin or ""
+        ini[car_key]["MODEL"] = racer.car
+        ini[car_key]["SKIN"] = racer.skin
         ini[car_key]["SPECTATOR_MODE"] = "0"
         ini[car_key]["DRIVERNAME"] = ""
         ini[car_key]["TEAM"] = ""
@@ -146,8 +160,17 @@ def main():
     parser.add_argument(
         "-e", "--entries", help="path to human-readable entries", required=True
     )
+    parser.add_argument(
+        "-b",
+        "--base-skins",
+        help="path to human-readable entries",
+        default="base_skins.json",
+    )
 
     args = parser.parse_args()
+
+    with open(args.base_skins) as base_skins_f:
+        BASE_SKINS.update(json.load(base_skins_f))
 
     with open(args.entries) as entry_f:
         racers = [entry_from_human_readable(e) for e in entry_f]
