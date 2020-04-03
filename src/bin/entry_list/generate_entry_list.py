@@ -173,8 +173,6 @@ def main():
         assert set(BASE_SKINS) == set(ALL_CARS)
 
     if args.entries:
-        if not args.skins:
-            raise ValueError("Can't have --entries without --skins")
         with open(args.entries) as entry_f:
             racers = [entry_from_human_readable(e) for e in entry_f]
     else:
