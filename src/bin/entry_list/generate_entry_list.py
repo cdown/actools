@@ -146,7 +146,7 @@ def print_entry_list_ini(racers, slots):
         ini[car_key]["BALLAST"] = "0"
         ini[car_key]["RESTRICTOR"] = "0"
 
-    ini.write(sys.stdout)
+    ini.write(sys.stdout, space_around_delimiters=False)
 
 
 def main():
