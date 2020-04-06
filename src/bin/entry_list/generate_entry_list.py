@@ -15,7 +15,7 @@ import csv
 import sys
 import json
 
-# car nickname -> car codename in AC
+# Car nickname -> car codename in AC
 CAR_NICKNAME_TO_CAR = {}
 ALL_CARS = []
 
@@ -55,7 +55,7 @@ _populate_car_nicknames("ks_porsche_911_gt3_r_2016", ["Porsche", "911"])
 def _get_biased_cars():
     for car in ALL_CARS:
         if car not in LESS_POPULAR_CARS:
-            # Yield it twice, to bias towards it
+            # Bias towards this kind of car
             yield car
         yield car
 
@@ -122,7 +122,6 @@ def merge_entries_with_skin_data(racers, skins_f):
     for racer in racers:
         car_prefs = skin_preferences[racer.rd_uid]
         if not car_prefs:
-            # No skins preferred, randomly assign
             continue
 
         skin_pref = car_prefs.get(racer.car)
@@ -151,15 +150,12 @@ def assigned_cars_to_back(racers):
 
 def print_entry_list_ini(racers, slots):
     ini = configparser.ConfigParser(allow_no_value=True)
-
-    # Case-sensitivity of keys
-    ini.optionxform = str
+    ini.optionxform = str  # case-sensitive ini keys
 
     if len(racers) > slots:
         raise ValueError("Number of racers more than slots")
 
     while len(racers) < slots:
-        # Randomly assign cars for unused or TBD slots
         racers.append(Entry())
 
     racers = assigned_cars_to_back(racers)
@@ -190,8 +186,8 @@ def update_base_skins(base_skins_f):
     BASE_SKINS.update(json.load(base_skins_f))
     assert set(BASE_SKINS) == set(ALL_CARS)
 
-    # Shuffle them, so we can avoid duplicate skins where possible by just
-    # index walking, which wouldn't be possible just with random.choice
+    # With this, we can avoid duplicate skins where possible by just index
+    # walking, which wouldn't be possible just with random.choice
     for car in BASE_SKINS:
         random.shuffle(BASE_SKINS[car])
         LAST_SKIN_INDEX[car] = 0
@@ -217,7 +213,7 @@ def make_practice_server_entries(slots):
 
     cars = BIASED_CARS
     if slots < len(BIASED_CARS):
-        # Not enough space, drop biasing
+        # Better not to bias rather than not have all car types
         cars = ALL_CARS
 
     cars = random.sample(cars, len(cars))
@@ -258,7 +254,6 @@ def main():
         with open(args.entries) as entry_f:
             racers = [entry_from_human_readable(e) for e in entry_f]
     else:
-        # Practice server, it will be padded to the number of slots
         racers = make_practice_server_entries(args.slots)
 
     rd_uids = [r.rd_uid for r in racers if r.rd_uid is not None]
