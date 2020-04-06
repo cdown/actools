@@ -107,7 +107,9 @@ def merge_entries_with_skin_data(racers, skins_f):
         skin_pref = car_prefs.get(racer.car)
         if skin_pref:
             if skin_pref not in BASE_SKINS[racer.car]:
-                raise ValueError("Skin {} is unknown for car {}".format(skin_pref, racer.car))
+                raise ValueError(
+                    "Skin {} is unknown for car {}".format(skin_pref, racer.car)
+                )
             racer.skin = skin_pref
             racer.steam_uid = rd_to_steam_uid[racer.rd_uid]
 
