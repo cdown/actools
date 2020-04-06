@@ -23,24 +23,44 @@ ALL_CARS = []
 BASE_SKINS = {}
 LAST_SKIN_INDEX = {}
 
+# Cars that should be selected less often randomly
+LESS_POPULAR_CARS = []
 
-def _populate_car_nicknames(model, nicknames):
+
+def _populate_car_nicknames(model, nicknames, less_popular=False):
     ALL_CARS.append(model)
     for n in nicknames:
         CAR_NICKNAME_TO_CAR[n.lower()] = model
+    if less_popular:
+        LESS_POPULAR_CARS.append(model)
 
 
 _populate_car_nicknames("ks_ferrari_488_gt3", ["Ferrari", "488", "F488"])
 _populate_car_nicknames("ks_audi_r8_lms_2016", ["Audi", "R8"])
 _populate_car_nicknames("bmw_z4_gt3", ["BMW", "Bimmer", "Z4"])
-_populate_car_nicknames("ks_glickenhaus_scg003", ["Glickenhaus", "SCG"])
+_populate_car_nicknames(
+    "ks_glickenhaus_scg003", ["Glickenhaus", "SCG"], less_popular=True
+)
 _populate_car_nicknames(
     "ks_lamborghini_huracan_gt3", ["Lambo", "Huracan", "Lamborghini"]
 )
 _populate_car_nicknames("ks_mclaren_650_gt3", ["650s", "Macca", "McLaren"])
-_populate_car_nicknames("ks_mercedes_amg_gt3", ["Merc", "Mercedes", "AMG"])
+_populate_car_nicknames(
+    "ks_mercedes_amg_gt3", ["Merc", "Mercedes", "AMG"], less_popular=True
+)
 _populate_car_nicknames("ks_nissan_gtr_gt3", ["Nissan", "GTR", "GT-R", "Godzilla"])
 _populate_car_nicknames("ks_porsche_911_gt3_r_2016", ["Porsche", "911"])
+
+
+def _get_biased_cars():
+    for car in ALL_CARS:
+        if car not in LESS_POPULAR_CARS:
+            # Yield it twice, to bias towards it
+            yield car
+        yield car
+
+
+BIASED_CARS = list(_get_biased_cars())
 
 LINE_RE = re.compile(r"\[USER=(\d+)\](.+)\[/USER\] - ([^\(]+)")
 
@@ -130,12 +150,11 @@ def print_entry_list_ini(racers, slots):
 
     for cur_car, racer in enumerate(racers):
         if not racer.car:
-            racer.car = random.choice(ALL_CARS)
+            racer.car = random.choice(BIASED_CARS)
 
         if not racer.skin:
             racer.skin = select_random_skin(racer.car)
 
-        car = racer.car or random.choice(ALL_CARS)
         car_key = "CAR_{}".format(cur_car)
         ini[car_key] = {}
         ini[car_key]["; {}".format(racer.name or "Free entry")] = None
