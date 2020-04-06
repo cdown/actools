@@ -21,6 +21,7 @@ ALL_CARS = []
 
 # All base content or DLC-shipped skins, populated at runtime
 BASE_SKINS = {}
+LAST_SKIN_INDEX = {}
 
 
 def _populate_car_nicknames(model, nicknames):
@@ -132,7 +133,7 @@ def print_entry_list_ini(racers, slots):
             racer.car = random.choice(ALL_CARS)
 
         if not racer.skin:
-            racer.skin = random.choice(BASE_SKINS[racer.car])
+            racer.skin = select_random_skin(racer.car)
 
         car = racer.car or random.choice(ALL_CARS)
         car_key = "CAR_{}".format(cur_car)
@@ -148,6 +149,28 @@ def print_entry_list_ini(racers, slots):
         ini[car_key]["RESTRICTOR"] = "0"
 
     ini.write(sys.stdout, space_around_delimiters=False)
+
+
+def update_base_skins(base_skins_f):
+    BASE_SKINS.update(json.load(base_skins_f))
+    assert set(BASE_SKINS) == set(ALL_CARS)
+
+    # Shuffle them, so we can avoid duplicate skins where possible by just
+    # index walking, which wouldn't be possible just with random.choice
+    for car in BASE_SKINS:
+        random.shuffle(BASE_SKINS[car])
+        LAST_SKIN_INDEX[car] = 0
+
+
+def select_random_skin(car):
+    if LAST_SKIN_INDEX[car] == len(BASE_SKINS[car]) - 1:
+        this_index = 0
+    else:
+        this_index = LAST_SKIN_INDEX[car] + 1
+
+    LAST_SKIN_INDEX[car] = this_index
+
+    return BASE_SKINS[car][this_index]
 
 
 def main():
@@ -170,8 +193,7 @@ def main():
     args = parser.parse_args()
 
     with open(args.base_skins) as base_skins_f:
-        BASE_SKINS.update(json.load(base_skins_f))
-        assert set(BASE_SKINS) == set(ALL_CARS)
+        update_base_skins(base_skins_f)
 
     if args.entries:
         with open(args.entries) as entry_f:
