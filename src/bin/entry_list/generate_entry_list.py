@@ -245,7 +245,8 @@ def main():
         # Practice server, it will be padded to the number of slots
         racers = make_practice_server_entries(args.slots)
 
-    if len(set(r.rd_uid for r in racers)) != len(racers):
+    rd_uids = [r.rd_uid for r in racers if r.rd_uid is not None]
+    if len(set(rd_uids)) != len(rd_uids):
         raise ValueError("Duplicate race entry")
 
     if args.skins:
