@@ -135,6 +135,20 @@ def merge_entries_with_skin_data(racers, skins_f):
             racer.steam_uid = rd_to_steam_uid[racer.rd_uid]
 
 
+def assigned_cars_to_back(racers):
+    """
+    In AC, if there are N slots, with N/2 of them assigned for a car, and (N/2)+1
+    racers join, one of the assigned slots will be used. After that, that slot
+    isn't reused again until much later, even if your Steam GUID matches.
+
+    Put assigned cars at the back, so that AC is less likely to offer them to
+    users that don't match the Steam GUID.
+    """
+    assigned_list = [r for r in racers if r.steam_uid]
+    unassigned_list = [r for r in racers if not r.steam_uid]
+    return unassigned_list + assigned_list
+
+
 def print_entry_list_ini(racers, slots):
     ini = configparser.ConfigParser(allow_no_value=True)
 
@@ -147,6 +161,8 @@ def print_entry_list_ini(racers, slots):
     while len(racers) < slots:
         # Randomly assign cars for unused or TBD slots
         racers.append(Entry())
+
+    racers = assigned_cars_to_back(racers)
 
     for cur_car, racer in enumerate(racers):
         if not racer.car:
