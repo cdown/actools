@@ -192,6 +192,30 @@ def select_random_skin(car):
     return BASE_SKINS[car][this_index]
 
 
+def make_practice_server_entries(slots):
+    """
+    We want to make sure we visit all the cars in random order, to ensure that
+    if possible we have every single car.
+    """
+    racers = []
+
+    cars = BIASED_CARS
+    if slots < len(BIASED_CARS):
+        # Not enough space, drop biasing
+        cars = ALL_CARS
+
+    cars = random.sample(cars, len(cars))
+    l = len(cars)
+    i = 0
+
+    while len(racers) < slots:
+        car = cars[i % l]
+        racers.append(Entry(car=car))
+        i += 1
+
+    return racers
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
 
@@ -219,7 +243,7 @@ def main():
             racers = [entry_from_human_readable(e) for e in entry_f]
     else:
         # Practice server, it will be padded to the number of slots
-        racers = []
+        racers = make_practice_server_entries(args.slots)
 
     if len(set(r.rd_uid for r in racers)) != len(racers):
         raise ValueError("Duplicate race entry")
