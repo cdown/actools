@@ -194,7 +194,12 @@ def update_base_skins(base_skins_f):
 
 
 def select_random_skin(car):
+    '''
+    We don't use random.choice because we want to randomise ahead of time and
+    then index, in order to avoid duplicated skins where possible.
+    '''
     if LAST_SKIN_INDEX[car] == len(BASE_SKINS[car]) - 1:
+        # Regrettable duplication
         this_index = 0
     else:
         this_index = LAST_SKIN_INDEX[car] + 1
