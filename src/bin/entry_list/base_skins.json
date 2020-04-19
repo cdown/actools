@@ -129,27 +129,11 @@
         "Nissan_98"
     ],
     "ks_porsche_911_gt3_r_2016": [
+        "00_gt3",
         "01_racing_912",
-        "02_racing_917",
-        "03_racing_919",
-        "04_racing_915",
-        "05_racing_913",
-        "06_racing_922",
-        "07_racing_914",
-        "08_racing_920",
-        "09_racing_921",
-        "0_cup_b",
-        "10_racing_918",
-        "11_racing_923",
-        "12_racing_924",
-        "13_racing_925",
-        "14_racing_926",
-        "15_racing_927",
-        "16_racing_928",
-        "17_racing_929",
-        "18_racing_930",
-        "19_racing_916",
-        "20_racing_931"
+        "02_racing_911",
+        "03_racing_910",
+        "0_racing_911b"
     ],
     "ks_glickenhaus_scg003": [
         "0_mimetic",
