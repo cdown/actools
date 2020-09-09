@@ -21,7 +21,6 @@ ALL_CARS = []
 
 # All base content or DLC-shipped skins, populated at runtime
 BASE_SKINS = {}
-LAST_SKIN_INDEX = {}
 
 # Cars that should be selected less often randomly
 LESS_POPULAR_CARS = []
@@ -146,6 +145,30 @@ def assigned_cars_to_back(racers):
     return unassigned_list + assigned_list
 
 
+def get_unassigned_skins(racers):
+    """
+    Initially seed a copy of BASE_SKINS with explicitly requested skins
+    removed. Further skins will be removed as they are used, and then we'll
+    eventually just fall back to select_random_skin with BASE_SKINS.
+
+    We need to iterate and make a deep copy of BASE_SKINS to avoid mutating it.
+    """
+
+    our_bs = collections.defaultdict(set)
+    explicitly_allocated_skins = collections.defaultdict(set)
+
+    for racer in racers:
+        if racer.skin:
+            explicitly_allocated_skins[racer.car].add(racer.skin)
+
+    for car, skins in BASE_SKINS.items():
+        for skin in skins:
+            if skin not in explicitly_allocated_skins[car]:
+                our_bs[car].add(skin)
+
+    return our_bs
+
+
 def print_entry_list_ini(racers, slots):
     ini = configparser.ConfigParser(allow_no_value=True)
     ini.optionxform = str  # case-sensitive ini keys
@@ -158,12 +181,14 @@ def print_entry_list_ini(racers, slots):
 
     racers = assigned_cars_to_back(racers)
 
+    unassigned_skins = get_unassigned_skins(racers)
+
     for cur_car, racer in enumerate(racers):
         if not racer.car:
             racer.car = random.choice(BIASED_CARS)
 
         if not racer.skin:
-            racer.skin = select_random_skin(racer.car)
+            racer.skin = select_random_skin(racer.car, unassigned_skins)
 
         car_key = "CAR_{}".format(cur_car)
         ini[car_key] = {}
@@ -184,27 +209,22 @@ def update_base_skins(base_skins_f):
     BASE_SKINS.update(json.load(base_skins_f))
     assert set(BASE_SKINS) == set(ALL_CARS)
 
-    # With this, we can avoid duplicate skins where possible by just index
-    # walking, which wouldn't be possible just with random.choice
-    for car in BASE_SKINS:
-        random.shuffle(BASE_SKINS[car])
-        LAST_SKIN_INDEX[car] = 0
 
-
-def select_random_skin(car):
+def select_random_skin(car, unassigned_skins):
     """
     We don't use random.choice because we want to randomise ahead of time and
     then index, in order to avoid duplicated skins where possible.
+
+    We also mark the skin as used by taking it out of rotation. If there are
+    none left, we just use any in BASE_SKINS.
     """
-    if LAST_SKIN_INDEX[car] == len(BASE_SKINS[car]) - 1:
-        # Regrettable duplication
-        this_index = 0
-    else:
-        this_index = LAST_SKIN_INDEX[car] + 1
-
-    LAST_SKIN_INDEX[car] = this_index
-
-    return BASE_SKINS[car][this_index]
+    try:
+        return unassigned_skins[car].pop()
+    except KeyError:
+        # None left, so we can't avoid overlap. Just get a random one from
+        # BASE_SKINS and leave it alone.
+        print("Skins for {} overlapped".format(car), file=sys.stderr)
+        return random.choice(BASE_SKINS[car])
 
 
 def make_practice_server_entries(slots):
