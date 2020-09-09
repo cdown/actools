@@ -194,10 +194,10 @@ def update_base_skins(base_skins_f):
 
 
 def select_random_skin(car):
-    '''
+    """
     We don't use random.choice because we want to randomise ahead of time and
     then index, in order to avoid duplicated skins where possible.
-    '''
+    """
     if LAST_SKIN_INDEX[car] == len(BASE_SKINS[car]) - 1:
         # Regrettable duplication
         this_index = 0
@@ -241,7 +241,9 @@ def main():
     )
     parser.add_argument("-s", "--skins", help="path to skins csv")
     parser.add_argument(
-        "-e", "--entries", help="path to human-readable entries",
+        "-e",
+        "--entries",
+        help="path to human-readable entries",
     )
     parser.add_argument(
         "-b",
