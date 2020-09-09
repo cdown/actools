@@ -38,9 +38,7 @@ def _populate_car_nicknames(model, nicknames, less_popular=False):
 _populate_car_nicknames("ks_ferrari_488_gt3", ["Ferrari", "488", "F488"])
 _populate_car_nicknames("ks_audi_r8_lms_2016", ["Audi", "R8"])
 _populate_car_nicknames("bmw_z4_gt3", ["BMW", "Bimmer", "Z4"])
-_populate_car_nicknames(
-    "ks_glickenhaus_scg003", ["Glickenhaus", "SCG"], less_popular=True
-)
+_populate_car_nicknames("ks_glickenhaus_scg003", ["Glickenhaus", "SCG"])
 _populate_car_nicknames(
     "ks_lamborghini_huracan_gt3", ["Lambo", "Huracan", "Lamborghini"]
 )
